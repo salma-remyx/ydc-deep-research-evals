@@ -1,0 +1,18 @@
+schema_version: 1
+fork: salma-remyx/ydc-deep-research-evals
+observed_landing_zones:
+- path: evals/
+  shape_tags:
+  - unclassified
+  confirmed_by:
+  - arxiv: 2607.02104v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none) -- new standalone sibling CLI `python -m evals.bias_aware_pairwise_evals`
+      plus the `bias_aware_aggregate` Python helper; it consumes the existing pipeline's
+      JSONL output but no pre-existing ent
+    branch: ask-the-right-comparison-bias-aware-bayesian-active-top--k-r
+    timestamp: '2026-07-15T19:18:21Z'
+  last_observed: '2026-07-15T19:18:21Z'
+rejected_shapes: []
+coordination_signals: []
+last_updated: '2026-07-15T19:18:21Z'
