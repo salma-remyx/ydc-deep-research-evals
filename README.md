@@ -144,3 +144,27 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Bias-Aware Aggregation of Pairwise Results
+
+The pairwise metric mitigates position bias at the *input* level by running flipped-order trials and then aggregating the votes by majority rule. An alternative, adapted from "Ask the Right Comparison: Bias-Aware Bayesian Active Top-k Ranking with LLM Judges" (arXiv:2607.02104), corrects bias at the *aggregation* layer instead: it fits a Bayesian model of latent report quality with an explicit, judge-specific position covariate under a shrinkage prior (so the data decide whether a given judge actually exhibits the bias), and reports a debiased ranking with posterior uncertainty plus a top-k-aware recommendation for the next trial order.
+
+Re-aggregate an existing results JSONL (as written by `deep_research_pairwise_evals.py`) without spending more API budget:
+
+```bash
+python -m evals.bias_aware_pairwise_evals \
+  --input-data path/to/deep_research_results_<model>.jsonl \
+  --output-dir path/to/output/directory \
+  --prior-bias-scale 1.0
+```
+
+For each dimension the output reports the debiased candidate advantage (mean +/- std), `p(candidate better)`, the naive win rate for contrast, the position-bias estimate (flagged when shrunk toward zero), and the next trial order the acquisition rule recommends.
+
+Use it directly in Python:
+
+```python
+from evals.bias_aware_pairwise_evals import bias_aware_aggregate
+
+aggregate = bias_aware_aggregate(results_rows, prior_bias_scale=1.0)
+print(aggregate["instruction_following"])
+```
