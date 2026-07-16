@@ -144,3 +144,45 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Citation Quality Evaluation (Source Relevance & Factual Support)
+
+In addition to the report-quality dimensions above, this repo can evaluate **citation quality** — whether a report's cited sources are actually relevant to its claims and genuinely substantiate them. Citation quality is judged as a structured rubric along two dimensions:
+
+1. **Source Relevance**: Are the cited sources pertinent to the claims they back? Penalizes off-topic or decorative citations and substantive claims left uncited.
+2. **Factual Support**: Do the cited sources actually substantiate the claims? Penalizes citations that omit or contradict the evidence the report attributes to them.
+
+Unlike the report-quality metric, the citation metric deliberately **preserves** markdown citation links (`[label](url)`) in the answers so they can be judged — the report-quality metric strips them. Each evaluation runs original and flipped-order trials to mitigate position bias, and the aggregate reports a `flip_disagreement_rate` per dimension (how often reversing the report order flipped the verdict) as a directional-bias diagnostic.
+
+### Running Citation Evaluations
+
+```bash
+python -m evals.citation_verification_evals \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --metric-num-trials 3
+```
+
+### Using the Citation Metric in Your Code
+
+```python
+from evals.metrics.citation_verification_metric import CitationVerificationMetric
+
+metric = CitationVerificationMetric(
+    eval_model="o3-mini-2025-01-31",
+    num_trials=3,
+    num_workers=3,
+)
+
+result = metric.score(
+    question="What are the economic impacts of climate change?",
+    baseline_answer="Reference report with citations ...",
+    candidate_answer="Candidate report with citations ...",
+)
+
+print(f"Source Relevance: {result.source_relevance.score} ({result.source_relevance.grade})")
+print(f"Factual Support: {result.factual_support.score} ({result.factual_support.grade})")
+```
+
+_Adapted from "Do You Need a Frontier Model as a Citation Verifier? Benchmarking Rubric LLMs for Deep-Research Source Attribution" (arXiv:2607.08700v1)._
