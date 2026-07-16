@@ -12,7 +12,14 @@ observed_landing_zones:
       JSONL output but no pre-existing ent
     branch: ask-the-right-comparison-bias-aware-bayesian-active-top--k-r
     timestamp: '2026-07-15T19:18:21Z'
-  last_observed: '2026-07-15T19:18:21Z'
+  - arxiv: 2607.08700v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: python -m evals.citation_verification_evals (CitationVerificationEvaluator.main
+      in evals/citation_verification_evals.py) - a NEW sibling CLI that subclasses
+      DeepResearchEvaluator and swaps in Citation
+    branch: do-you-need-a-frontier-model-as-a-citation-verifier-benchmar
+    timestamp: '2026-07-16T17:54:55Z'
+  last_observed: '2026-07-16T17:54:55Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-15T19:18:21Z'
+last_updated: '2026-07-16T17:54:55Z'
