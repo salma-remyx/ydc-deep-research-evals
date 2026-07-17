@@ -135,6 +135,51 @@ The evaluator supports several configuration options:
 - `metric-num-trials`: Number of trials per evaluation for more stable results (default: 3)
   - For each trial, the evaluation runs twice - once with the original order and once with the baseline and candidate answers flipped. This helps mitigate potential position bias in the evaluation.
 
+## Auditing Judge Reliability Across Models
+
+An LLM-as-judge score can move even when the candidate responses stay fixed, simply because the evaluator model was swapped. The `judge_reliability_audit.py` script runs the existing pairwise evaluation across multiple judge models on the **same** data and reports the measurement consequences of the swap: a residual **position-bias probe** per judge (derived from the original-vs-flipped preference data the metric already records), the **score drift** and **verdict-flip rate** between a reference judge and each other judge, and a **protocol audit trail** (success/failure counts and surviving trial counts).
+
+Adapted from *When the Judge Changes, So Does the Measurement: Auditing LLM-as-Judge Reliability* (arXiv:2607.08535v1).
+
+### Running the audit
+
+```bash
+python -m evals.judge_reliability_audit \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --judges o3-mini-2025-01-31 gpt-4o-2024-08-06 \
+  --num-workers 4 \
+  --metric-num-workers 3 \
+  --metric-num-trials 3
+```
+
+The first model in `--judges` is the reference judge; each subsequent model is compared against it. The audit report is saved as `judge_reliability_audit.json` in the output directory.
+
+### Using the audit helpers in your code
+
+You can also call the analysis helpers directly on structures produced by the existing pipeline:
+
+```python
+from evals.judge_reliability_audit import (
+    JudgeSwapAuditor,
+    position_bias_probe,
+    aggregate_drift,
+)
+
+# position_bias_probe takes a list of DeepResearchScoreResult objects (the
+# output of DeepResearchPairwiseMetric.score) and reports residual position
+# bias per dimension and overall.
+probe = position_bias_probe(score_results)
+
+# aggregate_drift compares two aggregate() outputs produced by different judges.
+drift = aggregate_drift(aggregate_judge_a, aggregate_judge_b)
+
+# JudgeSwapAuditor subclasses DeepResearchEvaluator and runs the whole
+# pipeline across multiple judges for you:
+auditor = JudgeSwapAuditor(judges=["o3-mini-2025-01-31", "gpt-4o-2024-08-06"])
+report = auditor.audit(dataframe)
+```
+
 ## License
 
 This project is licensed under the terms included in the LICENSE file.
