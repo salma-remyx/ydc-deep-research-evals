@@ -26,7 +26,14 @@ observed_landing_zones:
       entry point; no pre-existing module, workf
     branch: when-the-judge-changes-so-does-the-measurement-auditing-llm-
     timestamp: '2026-07-17T05:18:39Z'
-  last_observed: '2026-07-17T05:18:39Z'
+  - arxiv: 2504.14716v2
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "(none) \u2014 it is a new sibling CLI entry point (python\
+      \ evals/absolute_scoring_evals.py / python -m evals.absolute_scoring_evals)\
+      \ mirroring the pre-existing evals.deep_research_pairwise_evals; no pre-exi"
+    branch: pairwise-or-pointwise-evaluating-feedback-protocols-for-bias
+    timestamp: '2026-07-17T17:59:52Z'
+  last_observed: '2026-07-17T17:59:52Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-17T05:18:39Z'
+last_updated: '2026-07-17T17:59:52Z'
