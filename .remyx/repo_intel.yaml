@@ -19,7 +19,14 @@ observed_landing_zones:
       DeepResearchEvaluator and swaps in Citation
     branch: do-you-need-a-frontier-model-as-a-citation-verifier-benchmar
     timestamp: '2026-07-16T17:54:55Z'
-  last_observed: '2026-07-16T17:54:55Z'
+  - arxiv: 2607.08535v1
+    mode: Mode 3 (inspired experiment)
+    call_site_specifics: (none) -- the new module is its own sibling CLI `python -m
+      evals.judge_reliability_audit`, mirroring the repo's existing `evals.deep_research_pairwise_evals`
+      entry point; no pre-existing module, workf
+    branch: when-the-judge-changes-so-does-the-measurement-auditing-llm-
+    timestamp: '2026-07-17T05:18:39Z'
+  last_observed: '2026-07-17T05:18:39Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-16T17:54:55Z'
+last_updated: '2026-07-17T05:18:39Z'
