@@ -144,3 +144,25 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Absolute (Pointwise) Scoring — a bias-robust alternative to pairwise
+
+In addition to the pairwise comparison, the repo ships an **absolute (pointwise) scoring** protocol (`evals/absolute_scoring_evals.py`). Instead of asking the judge to pick between two reports — which is sensitive to presentation order and to distractor features such as report length — the judge scores a *single* report on an absolute 0–10 scale for each of the same four dimensions. Both the candidate and the baseline are scored independently, and the relative verdict (win/tie/lose) is *derived* from the absolute scores rather than elicited directly. Verdicts within a small score band (`TIE_BAND`, default `0.5`) are treated as ties, so minor score differences no longer flip the result.
+
+This protocol reuses the identical four dimensions, the o3-mini structured-output judge path, and the `DimensionResult` / `DeepResearchScoreResult` output contract, so it drops into the same batching and aggregation pipeline as the pairwise metric. Note that under this protocol `avg_score` is the candidate's mean absolute quality score (0–10), whereas under pairwise it is a gap-normalized score centered at 5.
+
+*Adapted from "Pairwise or Pointwise? Evaluating Feedback Protocols for Bias in LLM-Based Evaluation" (arXiv:2504.14716), which finds absolute (pointwise) scoring markedly more robust to distractor-feature bias than pairwise preference elicitation.*
+
+### Running absolute-scoring evaluations
+
+```bash
+python evals/absolute_scoring_evals.py \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --num-workers 4 \
+  --metric-num-workers 3 \
+  --metric-num-trials 3
+```
+
+Each trial scores the candidate and the baseline independently (there is no presentation order to bias), so `metric-num-trials` controls stability just as in the pairwise script.
