@@ -225,11 +225,25 @@ def parse_args():
         default=3,
         help="Number of trials per metric computation. Each trial runs the evaluation twice (with original and flipped inputs). Higher values produce more stable metrics but increase computation time.",
     )
+    parser.add_argument(
+        "--verifier-scoring",
+        action="store_true",
+        help="Score with the continuous logprob-verifier metric (expected score over "
+        "scoring-token logits) instead of the discrete pairwise judge. Delegates to "
+        "`python -m evals.logprob_verifier_evals`; the remaining pairwise flags are "
+        "ignored when this is set.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+
+    # Delegate to the continuous logprob-verifier evaluator when requested.
+    if args.verifier_scoring:
+        from evals.logprob_verifier_evals import main as run_verifier
+
+        return run_verifier()
 
     # Create output directory if it doesn't exist
     output_dir = Path(args.output_dir)

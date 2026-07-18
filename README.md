@@ -144,3 +144,63 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Logprob-Verifier Scoring (Continuous Verification) — adapted from LLM-as-a-Verifier
+
+In addition to the discrete pairwise judge, this repo can score reports with a
+**continuous verifier**: instead of reading a single discrete score the judge emits, it
+takes the *expected value over the distribution of scoring-token logits* at the scoring
+position. This yields a calibrated, fine-grained score (e.g. `7.04` rather than just
+`7`) using the same OpenAI judge and no extra training.
+
+The verifier scales verification along three axes:
+
+1. **Score granularity** — the candidate score-token set is `0..granularity`; finer
+   granularity gives better positive/negative separation. Scores are also reported
+   normalized to `[0, 1]` so different granularities stay comparable.
+2. **Repeated evaluation** — each dimension is scored over `num_trials` trials in both
+   original and flipped report order (the same position-bias mitigation as the pairwise
+   metric); the cross-trial standard deviation is reported as an uncertainty signal.
+3. **Criteria decomposition** — the four dimensions are each scored continuously and
+   aggregated independently.
+
+### Running the verifier
+
+Sibling CLI (same CSV → JSONL contract as the pairwise evaluator):
+
+```bash
+python -m evals.logprob_verifier_evals \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model gpt-4o-mini \
+  --granularity 10 \
+  --metric-num-trials 3
+```
+
+Or delegate from the existing pairwise CLI with `--verifier-scoring`:
+
+```bash
+python -m evals.deep_research_pairwise_evals --output-dir path/to/output --verifier-scoring
+```
+
+> **Model note:** the verifier reads the judge's `top_logprobs`, so `--model` must be a
+> chat model that exposes `logprobs` / `top_logprobs` (e.g. `gpt-4o`, `gpt-4o-mini`).
+
+### Using the verifier metric in your code
+
+```python
+from evals.metrics.logprob_verifier_metric import LogprobVerifierMetric
+
+metric = LogprobVerifierMetric(eval_model="gpt-4o-mini", granularity=10, num_trials=3)
+result = metric.score(
+    question="What are the impacts of climate change on agriculture?",
+    baseline_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+
+print(result.comprehensiveness.expected_score)      # continuous, e.g. 7.04
+print(result.comprehensiveness.normalized_score)    # in [0, 1]
+print(result.comprehensiveness.grade)               # "win" | "tie" | "lose"
+print(result.comprehensiveness.std)                 # cross-trial uncertainty
+```
+
