@@ -33,7 +33,14 @@ observed_landing_zones:
       \ mirroring the pre-existing evals.deep_research_pairwise_evals; no pre-exi"
     branch: pairwise-or-pointwise-evaluating-feedback-protocols-for-bias
     timestamp: '2026-07-17T17:59:52Z'
-  last_observed: '2026-07-17T17:59:52Z'
+  - arxiv: 2607.05391v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: Existing CLI evals/deep_research_pairwise_evals.py main()
+      via the new --verifier-scoring flag, which imports and calls evals.logprob_verifier_evals.main()
+      (also runnable directly as python -m evals.lo
+    branch: llm-as-a-verifier-a-general-purpose-verification-framework
+    timestamp: '2026-07-18T13:53:03Z'
+  last_observed: '2026-07-18T13:53:03Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-17T17:59:52Z'
+last_updated: '2026-07-18T13:53:03Z'
