@@ -40,7 +40,14 @@ observed_landing_zones:
       (also runnable directly as python -m evals.lo
     branch: llm-as-a-verifier-a-general-purpose-verification-framework
     timestamp: '2026-07-18T13:53:03Z'
-  last_observed: '2026-07-18T13:53:03Z'
+  - arxiv: 2607.02175v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: 'Existing pairwise CLI entry point evals/deep_research_pairwise_evals.py
+      main(), via the new --rubric-scoring flag which imports and calls evals.rubric_scoring_evals.run();
+      the new module also exposes '
+    branch: a-rubric-based-controlled-comparison-of-frontier-language-mo
+    timestamp: '2026-07-19T07:20:14Z'
+  last_observed: '2026-07-19T07:20:14Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-18T13:53:03Z'
+last_updated: '2026-07-19T07:20:14Z'
