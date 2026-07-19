@@ -144,3 +144,35 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Rubric-Based Scoring
+
+As an alternative to pairwise comparison, `evals/rubric_scoring_evals.py` scores each candidate report against an **atomic, weighted, MECE rubric** of pass/fail criteria and reports a **weight-tier pass-rate breakdown**. This surfaces a failure mode the aggregate pairwise scores hide: a report can look strong on average while systematically missing the highest-weighted (critical) criteria. The rubric is generated from the `baseline_answer` and graded by the same judge model used elsewhere in this package.
+
+Run it via the existing pairwise CLI with the `--rubric-scoring` flag, which delegates to the rubric path while reusing the same `(question, baseline_answer, candidate_answer)` input shape:
+
+```bash
+python evals/deep_research_pairwise_evals.py \
+  --rubric-scoring \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --num-workers 4 \
+  --num-criteria 25
+```
+
+The aggregate output includes `pass_rate_by_weight` (pass rate for weight 1 .. 5), `pass_rate_by_dimension`, `weighted_pass_rate`, and `critical_unsatisfied_rate` (fraction of weight-5 criteria met by no candidate). You can also use the metric directly:
+
+```python
+from evals.rubric_scoring_evals import RubricScoringMetric
+
+metric = RubricScoringMetric(eval_model="o3-mini-2025-01-31", num_criteria=25)
+result = metric.score(
+    question="Your research question...",
+    baseline_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+print(result.mean_pass_rate, result.weighted_pass_rate)
+```
+
+Adapted from "A rubric-based controlled comparison of frontier language models on expert-authored clinical reasoning tasks" (arXiv:2607.02175v1): the atomic weighted MECE rubric and weight-tier aggregation are preserved; expert-authored clinical rubrics are substituted with an LLM-generated rubric derived from the baseline reference answer.

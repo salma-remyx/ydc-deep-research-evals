@@ -225,11 +225,30 @@ def parse_args():
         default=3,
         help="Number of trials per metric computation. Each trial runs the evaluation twice (with original and flipped inputs). Higher values produce more stable metrics but increase computation time.",
     )
+    parser.add_argument(
+        "--rubric-scoring",
+        action="store_true",
+        help="Switch to rubric-based scoring: grade each candidate against an atomic, weighted MECE rubric and report a weight-tier pass-rate breakdown. Delegates to evals.rubric_scoring_evals.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+
+    # Delegate to the rubric-based scoring path when requested. This reuses the
+    # same (question, baseline_answer, candidate_answer) input shape but scores
+    # each candidate against an atomic, weighted MECE rubric instead of a
+    # pairwise preference.
+    if args.rubric_scoring:
+        from evals.rubric_scoring_evals import run as run_rubric_scoring
+
+        return run_rubric_scoring(
+            input_data=args.input_data,
+            output_dir=args.output_dir,
+            model=args.model,
+            num_workers=args.num_workers,
+        )
 
     # Create output directory if it doesn't exist
     output_dir = Path(args.output_dir)
