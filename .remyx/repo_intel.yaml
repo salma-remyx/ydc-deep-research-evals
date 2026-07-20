@@ -59,7 +59,12 @@ observed_landing_zones:
       in evals/deep_research_pairwise_evals.py; every eval run f
     branch: a-statistical-framework-for-ranking-llm-based-chatbots
     timestamp: '2026-07-20T00:45:18Z'
-  last_observed: '2026-07-20T00:45:18Z'
+  - arxiv: 2510.02190v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: a-rigorous-benchmark-with-multidimensional-evaluation-for-de
+    timestamp: '2026-07-20T18:54:34Z'
+  last_observed: '2026-07-20T18:54:34Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-20T00:45:18Z'
+last_updated: '2026-07-20T18:54:34Z'
