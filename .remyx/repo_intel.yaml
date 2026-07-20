@@ -48,6 +48,18 @@ observed_landing_zones:
     branch: a-rubric-based-controlled-comparison-of-frontier-language-mo
     timestamp: '2026-07-19T07:20:14Z'
   last_observed: '2026-07-19T07:20:14Z'
+- path: evals/metrics/
+  shape_tags:
+  - unclassified
+  confirmed_by:
+  - arxiv: 2412.18407v2
+    mode: Mode 2 (adapted port)
+    call_site_specifics: aggregate() in evals/metrics/deep_research_pairwise_metric.py,
+      reached via DeepResearchEvaluator.aggregate_results() -> main() (argparse CLI)
+      in evals/deep_research_pairwise_evals.py; every eval run f
+    branch: a-statistical-framework-for-ranking-llm-based-chatbots
+    timestamp: '2026-07-20T00:45:18Z'
+  last_observed: '2026-07-20T00:45:18Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-19T07:20:14Z'
+last_updated: '2026-07-20T00:45:18Z'
