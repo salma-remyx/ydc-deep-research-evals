@@ -7,6 +7,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
+from evals.metrics.bt_ranking import estimate_bt_ranking
 from evals.utils import (
     query_openai_model,
     query_openai_model_structured_outputs,
@@ -458,6 +459,17 @@ WEAKNESSES:
                 "net_winrate": net_winrate,
             }
 
+            # Bradley-Terry latent-ability estimate with Fisher-information
+            # uncertainty over the orientation-corrected per-trial flipped
+            # preferences the pipeline already stores. Adds a principled
+            # statistical ranking + significance flag alongside the raw rates.
+            pooled_preferences: List[str] = []
+            for result in dimension_results:
+                pooled_preferences.extend(result.preferred)
+            aggregated_metrics[dimension]["bt_ranking"] = estimate_bt_ranking(
+                pooled_preferences
+            ).to_dict()
+
         # Create overall average dictionaries
         aggregated_metrics["overall"] = {}
 
@@ -474,6 +486,16 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # Overall Bradley-Terry ranking pooled across every dimension and row.
+        all_preferences: List[str] = []
+        for score_result in scores_list:
+            for dimension in DIMENSIONS:
+                all_preferences.extend(getattr(score_result, dimension).preferred)
+        if all_preferences:
+            aggregated_metrics["overall"]["bt_ranking"] = estimate_bt_ranking(
+                all_preferences
+            ).to_dict()
 
         # Collect raw preferences for explanation summary
         raw_preferences = []

@@ -97,6 +97,10 @@ The evaluation results are saved as a JSONL file in the specified output directo
 - Aggregate metrics
 - Raw evaluation data
 
+### Statistical Ranking
+
+The aggregated metrics include a `bt_ranking` entry per dimension and an overall one, produced by a Bradley-Terry estimator operating on the orientation-corrected per-trial flipped preferences the pipeline already stores. For each dimension it reports a latent-ability score (logit scale; positive means the candidate is preferred over the baseline), a Fisher-information standard error and confidence interval on that ability, the implied win probability with its interval, and a `significant` flag indicating whether the candidate's edge is distinguishable from a tie at the available trial count. This complements the raw `net_winrate` (which is computed at the row-consensus level and carries no measure of reliability) with principled uncertainty. Adapted from *A Statistical Framework for Ranking LLM-Based Chatbots*.
+
 ## Using the Evaluation Metric in Your Code
 
 You can also use the evaluation metric directly in your Python code:
