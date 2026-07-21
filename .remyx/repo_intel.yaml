@@ -64,7 +64,12 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: a-rigorous-benchmark-with-multidimensional-evaluation-for-de
     timestamp: '2026-07-20T18:54:34Z'
-  last_observed: '2026-07-20T18:54:34Z'
+  - arxiv: 2607.12885v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: llm-judges-can-be-too-generous-when-there-is-no-reference-an
+    timestamp: '2026-07-21T17:55:19Z'
+  last_observed: '2026-07-21T17:55:19Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-20T18:54:34Z'
+last_updated: '2026-07-21T17:55:19Z'
