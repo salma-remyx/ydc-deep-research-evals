@@ -144,3 +144,36 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Auditing Judge Calibration & Sensitivity
+
+LLM judges can be over-generous and position-sensitive, especially when no
+ground-truth reference is available. The `judge_calibration_audit` module audits
+an already-run pairwise evaluation for these two failure modes — adapted from
+[LLM Judges Can Be Too Generous When There Is No Reference Answer](https://arxiv.org/abs/2607.12885).
+It consumes the exact output of the pairwise pipeline (no model is re-queried):
+
+- **Sensitivity** — the metric already scores every row in original *and* flipped
+  answer order. The audit reports the per-dimension `position_flip_rate`: how
+  often the judge's decision would flip purely due to answer positioning.
+- **Calibration** — a decisive `win`/`lose` awarded on a near-zero reported
+  quality gap (or a near-even trial split) is flagged as over-credited
+  (`over_credited_win_rate`, `low_margin_decisive_rate`).
+
+Run it against a results JSONL produced by the pairwise eval:
+
+```bash
+python -m evals.metrics.judge_calibration_audit \
+  --results path/to/output/deep_research_results_o3-mini-2025-01-31.jsonl
+```
+
+Or call it directly on the same `List[DeepResearchScoreResult]` that
+`DeepResearchPairwiseMetric.aggregate` consumes:
+
+```python
+from evals.metrics.judge_calibration_audit import audit
+
+report = audit(scores_list)  # scores_list: List[DeepResearchScoreResult]
+print(report["overall"])          # position_flip_rate, over_credited_win_rate, ...
+print(report["recommendation"])   # deterministic, actionable guidance
+```
