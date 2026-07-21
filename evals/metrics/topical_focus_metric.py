@@ -20,6 +20,11 @@ Adaptations from the paper (Mode 2 -- adapted port):
     LLM-as-judge that extracts the reference's key points and scores coverage,
     reusing this repo's existing OpenAI structured-output plumbing
     (``evals.utils.query_openai_model_structured_outputs``).
+  * The topical-focus *score* is not a holistic judge rating: it is computed
+    with the paper's SemanticDrift (SDR) formula over focus-anchor/deviation
+    keyword (FAK/FDK) regex counts and judged keyword relevance -- see
+    ``evals.metrics.semantic_drift``. The judge's topical-focus assessment is
+    kept only for its qualitative ``off_topic_sections``.
   * The paper's separate benchmark / leaderboard framework is intentionally out
     of scope; this module plugs into the existing ``evals/`` CLI family instead.
 
@@ -36,6 +41,7 @@ from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
 from evals.metrics.deep_research_pairwise_metric import DEFAULT_EVAL_MODEL
+from evals.metrics.semantic_drift import SemanticDriftMetric
 from evals.utils import (
     query_openai_model_structured_outputs,
     replace_markdown_links_with_text,
@@ -175,6 +181,9 @@ class TopicalFocusMetric:
         self.eval_model = eval_model
         self.num_trials = num_trials
         self.num_workers = num_workers
+        # Topical-focus scores come from the paper's SemanticDrift formula
+        # (FAK/FDK counts + judged relevance), not a holistic judge rating.
+        self.semantic_drift = SemanticDriftMetric(eval_model=eval_model)
 
     def _get_evaluation_messages(
         self, metric_input: TopicalFocusMetricInput
@@ -303,7 +312,21 @@ class TopicalFocusMetric:
         if not outputs:
             raise ValueError("Failed to get any outputs from evaluation model")
 
-        return self._merge_trial_outputs(outputs)
+        result = self._merge_trial_outputs(outputs)
+
+        # Replace the judge's holistic topical-focus rating with the paper's
+        # formulaic SemanticDrift score; keep the judge's off-topic findings.
+        drift = self.semantic_drift.score(
+            question=metric_input.question,
+            reference_answer=metric_input.baseline_answer,
+            candidate_answer=metric_input.candidate_answer,
+        )
+        result.topical_focus = TopicalFocusAssessment(
+            score=drift.topical_focus_score,
+            off_topic_sections=result.topical_focus.off_topic_sections,
+            rationale=drift.rationale,
+        )
+        return result
 
     def aggregate(
         self, scores_list: List[TopicalFocusScoreResult]

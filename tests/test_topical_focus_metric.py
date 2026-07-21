@@ -15,6 +15,7 @@ from evals.metrics.deep_research_pairwise_metric import (  # noqa: F401  (non-ne
 )
 from evals.utils import replace_markdown_links_with_text  # noqa: F401  (non-new)
 
+from evals.metrics.semantic_drift import SemanticDriftMetric, SemanticDriftResult
 from evals.metrics.topical_focus_metric import (
     DIMENSIONS,
     SemanticQualityAssessment,
@@ -85,11 +86,12 @@ def test_input_reuses_existing_markdown_link_stripper():
 
 def test_score_wires_judge_output(monkeypatch):
     # End-to-end wiring of the new metric with no OpenAI call: patch the judge
-    # call and assert score() turns judge output into an aggregate-able result.
+    # call and the SemanticDrift scorer, and assert score() turns judge output
+    # plus the paper's SDR formula into an aggregate-able result.
     judge_output = TopicalFocusJudgeOutput(
         reference_key_points=["kp0", "kp1", "kp2"],
         topical_focus=TopicalFocusAssessment(
-            score=9, off_topic_sections=[], rationale="focused"
+            score=9, off_topic_sections=["section on Y"], rationale="focused"
         ),
         semantic_quality=SemanticQualityAssessment(
             score=6,
@@ -98,6 +100,17 @@ def test_score_wires_judge_output(monkeypatch):
             rationale="misses one",
         ),
     )
+    drift_result = SemanticDriftResult(
+        anchor_keywords=["x", "impact"],
+        deviation_keywords=["y"],
+        anchor_counts=[3, 1],
+        deviation_counts=[2],
+        anchor_relevances=[5.0, 4.0],
+        deviation_relevances=[4.0],
+        semantic_drift=0.2,
+        topical_focus_score=8.0,
+        rationale="mostly anchored",
+    )
 
     calls = []
 
@@ -105,7 +118,11 @@ def test_score_wires_judge_output(monkeypatch):
         calls.append(messages)
         return judge_output
 
+    def fake_drift(self, question, reference_answer, candidate_answer):
+        return drift_result
+
     monkeypatch.setattr(TopicalFocusMetric, "_query_evaluation_model", fake_query)
+    monkeypatch.setattr(SemanticDriftMetric, "score", fake_drift)
 
     metric = TopicalFocusMetric(num_trials=3, num_workers=2)
     result = metric.score(
@@ -115,7 +132,11 @@ def test_score_wires_judge_output(monkeypatch):
     )
     assert len(calls) == 3  # num_trials independent judge calls
     assert isinstance(result, TopicalFocusScoreResult)
-    assert result.composite_score == pytest.approx(7.5)
+    # Topical focus comes from the SDR formula, not the judge's holistic 9;
+    # the judge's qualitative off-topic findings are preserved.
+    assert result.topical_focus.score == pytest.approx(8.0)
+    assert result.topical_focus.off_topic_sections == ["section on Y"]
+    assert result.composite_score == pytest.approx(7.0)
     assert result.semantic_quality.coverage_fraction == pytest.approx(2 / 3)
     # score() output feeds straight back into aggregate()
     assert metric.aggregate([result])["support"] == 1
