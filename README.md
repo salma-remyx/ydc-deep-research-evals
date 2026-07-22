@@ -135,6 +135,40 @@ The evaluator supports several configuration options:
 - `metric-num-trials`: Number of trials per evaluation for more stable results (default: 3)
   - For each trial, the evaluation runs twice - once with the original order and once with the baseline and candidate answers flipped. This helps mitigate potential position bias in the evaluation.
 
+## Multi-Agent Debate Judge
+
+An alternative **judge architecture** that scores the same report pairs via multi-agent debate rather than a single model pass. A panel of debating agents independently assesses the pair from distinct perspectives, revises their verdicts over a number of debate rounds in light of one another's evidence, and a final chair agent synthesizes the consolidated verdict — producing the same per-dimension preference as the single-pass judge, so the two architectures' results are directly comparable.
+
+This lets you test whether debate beats the single-pass judge on the DeepConsult dataset — adapted from [Does Multi-Agent Debate Improve AI Feedback on Research Papers?](https://arxiv.org/abs/2607.14713v1), whose headline finding is that authors preferred the single pass over multi-agent debate tools despite the latter spending roughly thirty times the tokens. Run it alongside the single-pass evaluator (its outputs use a `debate_` prefix so the two coexist):
+
+```bash
+python -m evals.multi_agent_debate_evals \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --debaters 3 \
+  --debate-rounds 1 \
+  --metric-num-trials 3
+```
+
+You can also use the debate metric directly in your code, where it subclasses the standard pairwise metric and reuses its aggregation:
+
+```python
+from evals.multi_agent_debate_metric import MultiAgentDebateMetric
+
+metric = MultiAgentDebateMetric(
+    eval_model="o3-mini-2025-01-31",
+    num_trials=3,
+    n_debaters=3,
+    n_rounds=1,
+)
+result = metric.score(
+    question="What are the impacts of climate change on agriculture?",
+    baseline_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+```
+
 ## License
 
 This project is licensed under the terms included in the LICENSE file.
