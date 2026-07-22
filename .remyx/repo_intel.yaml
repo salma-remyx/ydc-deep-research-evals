@@ -47,7 +47,14 @@ observed_landing_zones:
       the new module also exposes '
     branch: a-rubric-based-controlled-comparison-of-frontier-language-mo
     timestamp: '2026-07-19T07:20:14Z'
-  last_observed: '2026-07-19T07:20:14Z'
+  - arxiv: 2607.14713v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: 'New sibling CLI evals/multi_agent_debate_evals.py:main()
+      (python -m evals.multi_agent_debate_evals) -> MultiAgentDebateEvaluator -> MultiAgentDebateMetric;
+      no PRE-EXISTING entry point reaches it (not '
+    branch: does-multi-agent-debate-improve-ai-feedback-on-research-pape
+    timestamp: '2026-07-22T09:32:16Z'
+  last_observed: '2026-07-22T09:32:16Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -72,4 +79,4 @@ observed_landing_zones:
   last_observed: '2026-07-21T17:55:19Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-21T17:55:19Z'
+last_updated: '2026-07-22T09:32:16Z'
