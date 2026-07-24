@@ -54,7 +54,12 @@ observed_landing_zones:
       no PRE-EXISTING entry point reaches it (not '
     branch: does-multi-agent-debate-improve-ai-feedback-on-research-pape
     timestamp: '2026-07-22T09:32:16Z'
-  last_observed: '2026-07-22T09:32:16Z'
+  - arxiv: 2607.19322v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: two-level-meta-rubrics-for-evaluating-open-ended-generation-
+    timestamp: '2026-07-24T00:51:44Z'
+  last_observed: '2026-07-24T00:51:44Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -79,4 +84,4 @@ observed_landing_zones:
   last_observed: '2026-07-21T17:55:19Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-22T09:32:16Z'
+last_updated: '2026-07-24T00:51:44Z'
