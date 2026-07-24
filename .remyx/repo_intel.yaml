@@ -59,7 +59,14 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: two-level-meta-rubrics-for-evaluating-open-ended-generation-
     timestamp: '2026-07-24T00:51:44Z'
-  last_observed: '2026-07-24T00:51:44Z'
+  - arxiv: 2607.21340v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: evals/deep_research_pairwise_evals.py -- the existing CLI
+      entry point (main() -> DeepResearchEvaluator), reached when the new --bankability-scoring
+      flag is passed; BankabilityMetric is invoked from ev
+    branch: capital-markets-llm-reliability-score-cm-lrs-from-plausible-
+    timestamp: '2026-07-24T19:09:02Z'
+  last_observed: '2026-07-24T19:09:02Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -84,4 +91,4 @@ observed_landing_zones:
   last_observed: '2026-07-21T17:55:19Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-24T00:51:44Z'
+last_updated: '2026-07-24T19:09:02Z'
