@@ -144,3 +144,53 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Bankability Scoring (CM-LRS)
+
+Adapted from *Capital Markets LLM Reliability Score (CM-LRS): From Plausible to Bankable* (arXiv:2607.21340v1). The pairwise dimensions above measure quality *relative* to a baseline; bankability scoring adds an **absolute, pointwise** 0-5 rubric for whether a report is defensible in a high-stakes setting. It scores the candidate answer on seven dimensions, each from 0 to 5:
+
+1. **Factual accuracy**: claims and figures are correct and verifiable.
+2. **Evidence traceability**: material claims are tied to followable sources.
+3. **Numerical consistency**: figures reconcile internally (totals, units, percentages).
+4. **Workflow completeness**: the requested task is addressed end to end.
+5. **Source discipline**: sources are relevant, authoritative, and not fabricated.
+6. **Decision usefulness**: the output supports a concrete decision or action.
+7. **Reviewability / auditability**: a reviewer can reconstruct how it was derived.
+
+The per-report aggregate is a weighted mean over the seven dimensions, defaulting to equal weights and tunable per dimension.
+
+### Running bankability scoring
+
+Pass `--bankability-scoring` to score each candidate answer on the rubric alongside the pairwise comparison:
+
+```bash
+python evals/deep_research_pairwise_evals.py \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --bankability-scoring
+```
+
+Each result row gains `bankability_<dimension>_score` fields (plus `bankability_aggregate_score`), and the aggregate file gains a `bankability` block with per-dimension and overall means.
+
+### Using the bankability metric in your code
+
+```python
+from evals.metrics.bankability_metric import BankabilityMetric
+
+metric = BankabilityMetric(eval_model="o3-mini-2025-01-31", num_trials=3, num_workers=3)
+
+result = metric.score(
+    question="What are Acme's recent financing activities and use of proceeds?",
+    answer="Your report text...",
+)
+
+print(f"Decision usefulness: {result.decision_usefulness.score}")
+print(f"Bankability aggregate: {result.aggregate:.2f}")
+```
+
+Tune the aggregate by passing per-dimension weights (omitted dimensions get zero weight and the supplied values are normalized to sum to 1):
+
+```python
+BankabilityMetric(weights={"decision_usefulness": 2.0, "evidence_traceability": 1.0})
+```
