@@ -144,3 +144,35 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Meta-Rubric Factual-Completeness Scoring
+
+Two-level meta-rubric factual-completeness coverage — adapted from "Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT, a Benchmark for Factual Completeness" (arXiv:2607.19322). This complements the pairwise `completeness` dimension with a structured, coverage-based signal: an LLM judge authors a grouped, importance-weighted meta-rubric for what a complete answer should contain, the rubric is mechanically compiled into a flat checklist of binary checks, and the judge scores each check to produce a weighted factual-completeness coverage score (the "missing half of factuality").
+
+### Running the Evaluation
+
+```bash
+python evals/meta_rubric_completeness_evals.py \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --num-workers 4
+```
+
+The input CSV uses the same `question`, `baseline_answer`, `candidate_answer` columns as the pairwise script. Each row emits a `factual_completeness_coverage` score plus per-group and per-kind coverage breakdowns, and the corpus-level mean is written to an aggregate JSON file.
+
+### Using the Scorer in Your Code
+
+```python
+from evals.meta_rubric_completeness_evals import MetaRubricCompletenessScorer
+
+scorer = MetaRubricCompletenessScorer(model="o3-mini-2025-01-31")
+result = scorer.score(
+    question="What are the impacts of climate change on agriculture?",
+    baseline_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+
+print(f"Factual-completeness coverage: {result['factual_completeness_coverage']:.4f}")
+print(f"Checks met: {result['checks_met']}/{result['checks_total']}")
+```
