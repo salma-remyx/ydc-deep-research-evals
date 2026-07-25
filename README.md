@@ -144,3 +144,79 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Topical-Focus + Semantic-Quality Absolute Scoring
+
+In addition to the pairwise comparison, this repo can score each report
+*absolutely* against the reference on two dimensions adapted from
+[A Rigorous Benchmark with Multidimensional Evaluation for Deep Research Agents: From Answers to Reports](https://arxiv.org/abs/2510.02190)
+(Dr. Bench):
+
+1. **Topical Focus**: Does the report stay on the research question's core topics, or does it drift off-topic?
+2. **Semantic Quality**: How completely does the report cover the reference answer's key information points (the "reference bundle")?
+
+These complement the pairwise dimensions rather than replacing them. They use the same input CSV (`question`, `baseline_answer`, `candidate_answer`) and write the same JSONL + aggregate-JSON artifacts.
+
+```bash
+python -m evals.topical_focus_evals \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --metric-num-trials 3
+```
+
+Each row is scored absolutely (not pairwise), so there is no presentation
+position to flip; instead `--metric-num-trials` independent judge calls are
+averaged to reduce variance. Per-row results include `topical_focus_score`,
+`semantic_quality_score`, `composite_score`, and `coverage_fraction`; the
+aggregate JSON reports per-dimension `avg_score` plus overall
+`avg_composite_score` and `avg_coverage_fraction`.
+
+You can also use the metric directly:
+
+```python
+from evals.metrics.topical_focus_metric import TopicalFocusMetric
+
+metric = TopicalFocusMetric(eval_model="o3-mini-2025-01-31", num_trials=3)
+result = metric.score(
+    question="What are the impacts of climate change on agriculture?",
+    baseline_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+print(f"Topical focus: {result.topical_focus.score}")
+print(f"Semantic quality: {result.semantic_quality.score}")
+print(f"Composite: {result.composite_score}")
+```
+
+### Semantic-Drift Topical Focus (FAK/FDK)
+
+The `topical_focus` score is computed with the SemanticDrift (SDR) formula
+from Dr. Bench rather than a holistic judge rating. For each question, a judge
+derives 5 focus-anchor keywords (FAKs) and 5 focus-deviation keywords (FDKs)
+from the question and reference answer (substituting for DrBench's curated
+keyword bundles); the candidate report's keyword occurrences are counted by
+regex, each keyword's relevance to the report is judged on a 0-5 scale, and
+the paper's formula combines them:
+
+```
+SDR = 0.7 * (1 - mean(min(fak_count / 2, 1) * fak_relevance / 5))
+    + 0.3 * mean(min(fdk_count, 1) * fdk_relevance / 5)
+topical_focus = (1 - SDR) * 10
+```
+
+You can also use the drift scorer directly:
+
+```python
+from evals.metrics.semantic_drift import SemanticDriftMetric
+
+drift = SemanticDriftMetric(eval_model="o3-mini-2025-01-31")
+result = drift.score(
+    question="What are the impacts of climate change on agriculture?",
+    reference_answer="Your reference answer text...",
+    candidate_answer="Your candidate answer text...",
+)
+print(f"SemanticDrift: {result.semantic_drift}")
+print(f"Topical focus: {result.topical_focus_score}")
+print(f"Anchors: {result.anchor_keywords} (counts {result.anchor_counts})")
+print(f"Deviations: {result.deviation_keywords} (counts {result.deviation_counts})")
+```
