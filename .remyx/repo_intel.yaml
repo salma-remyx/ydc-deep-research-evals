@@ -88,7 +88,14 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: llm-judges-can-be-too-generous-when-there-is-no-reference-an
     timestamp: '2026-07-21T17:55:19Z'
-  last_observed: '2026-07-21T17:55:19Z'
+  - arxiv: 2607.28282v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "DeepResearchPairwiseMetric.aggregate() \u2014 invoked by\
+      \ the pre-existing DeepResearchEvaluator.aggregate_results() in evals/deep_research_pairwise_evals.py\
+      \ (CLI main() entry point)"
+    branch: towards-scalable-reliable-automated-evaluation-with-large-la
+    timestamp: '2026-08-06T12:36:00Z'
+  last_observed: '2026-08-06T12:36:00Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-24T19:09:02Z'
+last_updated: '2026-08-06T12:36:00Z'
