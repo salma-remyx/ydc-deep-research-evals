@@ -7,6 +7,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
+from evals.metrics.elo_ranking import rank_with_elo
 from evals.utils import (
     query_openai_model,
     query_openai_model_structured_outputs,
@@ -114,6 +115,8 @@ class DeepResearchPairwiseMetric:
         eval_model: str = DEFAULT_EVAL_MODEL,
         num_trials: int = 3,
         num_workers: int = 3,
+        agreement_threshold: float = 0.5,
+        elo_k: float = 32.0,
     ):
         """
         Initialize the evaluator.
@@ -122,10 +125,17 @@ class DeepResearchPairwiseMetric:
             eval_model: The model to use for evaluation
             num_trials: Number of times to run the evaluation model
             num_workers: Number of parallel workers to use for processing trials
+            agreement_threshold: Fraction of trials that must agree with the
+                majority for a row to count as a decided win/loss in the Elo
+                ranking (0.5 = majority vote, 1.0 = full unanimity). Adapted
+                from arXiv:2607.28282; see evals.metrics.elo_ranking.
+            elo_k: K-factor for the Elo rating updates in aggregate().
         """
         self.eval_model = eval_model
         self.num_trials = num_trials
         self.num_workers = num_workers
+        self.agreement_threshold = agreement_threshold
+        self.elo_k = elo_k
 
     def _get_evaluation_messages(
         self, metric_input: DeepResearchPairwisePreferenceInput
@@ -474,6 +484,15 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # Elo ranking + adjustable-threshold coverage over the pairwise outcomes
+        # (adapted from arXiv:2607.28282; see evals.metrics.elo_ranking).
+        aggregated_metrics["elo_ranking"] = rank_with_elo(
+            scores_list,
+            dimensions=DIMENSIONS,
+            agreement_threshold=self.agreement_threshold,
+            k=self.elo_k,
+        )
 
         # Collect raw preferences for explanation summary
         raw_preferences = []
