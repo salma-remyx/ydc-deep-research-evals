@@ -95,7 +95,14 @@ observed_landing_zones:
       \ (CLI main() entry point)"
     branch: towards-scalable-reliable-automated-evaluation-with-large-la
     timestamp: '2026-08-06T12:36:00Z'
-  last_observed: '2026-08-06T12:36:00Z'
+  - arxiv: 2608.02444v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: DeepResearchPairwiseMetric.aggregate (in evals/metrics/deep_research_pairwise_metric.py),
+      reached via DeepResearchEvaluator.aggregate_results from the main() CLI entry
+      point in evals/deep_research_pai
+    branch: parevallayer-when-partial-llm-agent-evaluations-support-a-de
+    timestamp: '2026-08-07T05:53:07Z'
+  last_observed: '2026-08-07T05:53:07Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-08-06T12:36:00Z'
+last_updated: '2026-08-07T05:53:07Z'
