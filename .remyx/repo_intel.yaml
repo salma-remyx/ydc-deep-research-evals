@@ -102,7 +102,14 @@ observed_landing_zones:
       point in evals/deep_research_pai
     branch: parevallayer-when-partial-llm-agent-evaluations-support-a-de
     timestamp: '2026-08-07T05:53:07Z'
-  last_observed: '2026-08-07T05:53:07Z'
+  - arxiv: 2607.29252v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: DeepResearchPairwiseMetric.aggregate() in evals/metrics/deep_research_pairwise_metric.py
+      (line 456), reached from the existing CLI entry point evals/deep_research_pairwise_evals.py
+      via main() -> Evalu
+    branch: calibratedrubric-task-adaptive-rubric-banks-for-open-ended-l
+    timestamp: '2026-08-07T22:36:15Z'
+  last_observed: '2026-08-07T22:36:15Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-08-07T05:53:07Z'
+last_updated: '2026-08-07T22:36:15Z'
