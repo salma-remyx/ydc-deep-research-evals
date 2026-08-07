@@ -135,6 +135,38 @@ The evaluator supports several configuration options:
 - `metric-num-trials`: Number of trials per evaluation for more stable results (default: 3)
   - For each trial, the evaluation runs twice - once with the original order and once with the baseline and candidate answers flipped. This helps mitigate potential position bias in the evaluation.
 
+## Partial-Evaluation Decision Layer
+
+Each aggregate run also reports a `partial_eval_decision` block — a decision
+layer adapted from *ParEvalLayer: When Partial LLM-Agent Evaluations Support a
+Decision*. Rather than trusting a partial score, the layer fixes a comparison
+policy in advance and, for the per-question win/lose/tie outcomes the run has
+collected, records one of four verdicts:
+
+- `better` — the candidate beats the baseline by the required margin.
+- `not_better` — the baseline beats the candidate by the required margin.
+- `abstain` — enough evidence to say the two systems are within the margin.
+- `needs_evidence` — the observed outcomes cannot yet support a decision.
+
+It also replays the outcomes in collection order and reports
+`questions_to_decision` and `fraction_needed`: how many questions the run
+actually required to reach the same verdict the full run reaches. This is the
+throughput signal for the multi-trial, multi-worker pipeline — how much of a
+run could have been skipped without changing the conclusion.
+
+The comparison policy defaults to a `0.1` margin at `0.95` confidence with a
+5-outcome floor, and is exposed under `partial_eval_decision["policy"]`:
+
+```python
+aggregate_metrics["partial_eval_decision"]
+# {
+#   "policy": {"margin": 0.1, "confidence": 0.95, "min_decisions": 5},
+#   "overall": {"verdict": "better", "questions_to_decision": 6,
+#               "fraction_needed": 0.2, ...},
+#   "by_dimension": {"instruction_following": {...}, ...}
+# }
+```
+
 ## License
 
 This project is licensed under the terms included in the LICENSE file.

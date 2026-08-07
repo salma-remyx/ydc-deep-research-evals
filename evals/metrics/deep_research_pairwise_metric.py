@@ -12,6 +12,12 @@ from evals.utils import (
     query_openai_model_structured_outputs,
     replace_markdown_links_with_text,
 )
+from evals.metrics.partial_eval_decision import (
+    ComparisonPolicy,
+    Outcome,
+    majority_outcomes,
+    summarize_run,
+)
 
 DIMENSIONS = [
     "instruction_following",
@@ -474,6 +480,39 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # ParEvalLayer-style decision layer over the paired outcomes observed
+        # in this run: reports whether the (possibly partial) run already
+        # supports a confident comparison verdict and how many questions were
+        # actually required to reach it. Adapted from arXiv:2608.02444.
+        per_dimension_outcomes: Dict[str, List[Outcome]] = {
+            dimension: [
+                (
+                    getattr(score_result, dimension).is_win,
+                    getattr(score_result, dimension).is_lose,
+                    getattr(score_result, dimension).is_tie,
+                )
+                for score_result in scores_list
+            ]
+            for dimension in DIMENSIONS
+        }
+        overall_outcomes = majority_outcomes(
+            [
+                [per_dimension_outcomes[dimension][i] for dimension in DIMENSIONS]
+                for i in range(len(scores_list))
+            ]
+        )
+        decision_policy = ComparisonPolicy()
+        aggregated_metrics["partial_eval_decision"] = {
+            "policy": decision_policy.to_dict(),
+            "overall": summarize_run(overall_outcomes, decision_policy),
+            "by_dimension": {
+                dimension: summarize_run(
+                    per_dimension_outcomes[dimension], decision_policy
+                )
+                for dimension in DIMENSIONS
+            },
+        }
 
         # Collect raw preferences for explanation summary
         raw_preferences = []
