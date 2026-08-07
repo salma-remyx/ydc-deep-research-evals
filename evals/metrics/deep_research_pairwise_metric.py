@@ -7,6 +7,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
+from evals.metrics.rubric_reliability import compute_reliability_from_votes
 from evals.utils import (
     query_openai_model,
     query_openai_model_structured_outputs,
@@ -449,6 +450,13 @@ WEAKNESSES:
                 else 0.0
             )
 
+            # Bayesian rubric-reliability posterior (adapted from
+            # CalibratedRubric): estimate how measurably this dimension
+            # separates the two reports from the pooled trial votes.
+            dim_reliability = compute_reliability_from_votes(
+                [result.preferred for result in dimension_results]
+            )
+
             # Store in dimension-specific dict
             aggregated_metrics[dimension] = {
                 "win_rate": win_rate,
@@ -456,6 +464,10 @@ WEAKNESSES:
                 "lose_rate": lose_rate,
                 "avg_score": avg_score,
                 "net_winrate": net_winrate,
+                "reliability": dim_reliability.reliability,
+                "reliability_ci": [dim_reliability.ci_low, dim_reliability.ci_high],
+                "measurable": dim_reliability.measurable,
+                "num_votes": dim_reliability.num_votes,
             }
 
         # Create overall average dictionaries
@@ -474,6 +486,34 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # Reliability summary across dimensions (Bayesian measurability).
+        # Dimensions whose agreement posterior is too uncertain to clear the
+        # measurability threshold are down-weighted in the reliability-weighted
+        # average so the headline score reflects how much the judge could
+        # actually measure.
+        dimension_reliabilities = [
+            aggregated_metrics[dimension]["reliability"] for dimension in DIMENSIONS
+        ]
+        aggregated_metrics["overall"]["mean_reliability"] = sum(
+            dimension_reliabilities
+        ) / len(dimension_reliabilities)
+        aggregated_metrics["overall"]["num_measurable_dimensions"] = sum(
+            1
+            for dimension in DIMENSIONS
+            if aggregated_metrics[dimension]["measurable"]
+        )
+        reliability_weight = sum(dimension_reliabilities)
+        aggregated_metrics["overall"]["reliability_weighted_avg_score"] = (
+            sum(
+                aggregated_metrics[dimension]["avg_score"]
+                * aggregated_metrics[dimension]["reliability"]
+                for dimension in DIMENSIONS
+            )
+            / reliability_weight
+            if reliability_weight > 0
+            else 0.0
+        )
 
         # Collect raw preferences for explanation summary
         raw_preferences = []
