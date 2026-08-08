@@ -110,6 +110,12 @@ observed_landing_zones:
     branch: calibratedrubric-task-adaptive-rubric-banks-for-open-ended-l
     timestamp: '2026-08-07T22:36:15Z'
   last_observed: '2026-08-07T22:36:15Z'
-rejected_shapes: []
+rejected_shapes:
+- shape_tag: null
+  reason_code: null
+  reason_summary: ''
+  observed:
+  - arxiv: 2607.28094v1
+    timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-07T22:36:15Z'
+last_updated: '2026-08-08T16:27:44Z'
