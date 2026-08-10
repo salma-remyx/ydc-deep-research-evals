@@ -114,7 +114,14 @@ observed_landing_zones:
       via main() -> Evalu
     branch: calibratedrubric-task-adaptive-rubric-banks-for-open-ended-l
     timestamp: '2026-08-07T22:36:15Z'
-  last_observed: '2026-08-07T22:36:15Z'
+  - arxiv: 2608.06202v1
+    mode: Mode 3 (inspired experiment)
+    call_site_specifics: 'DeepResearchPairwiseMetric.score() (per-row, builds the
+      stability block from already-collected all_preferred/all_scores trial data)
+      and DeepResearchPairwiseMetric.aggregate() (per-dimension + overall '
+    branch: what-current-ai-benchmarks-leave-unmeasured-modality-search-
+    timestamp: '2026-08-10T20:59:14Z'
+  last_observed: '2026-08-10T20:59:14Z'
 rejected_shapes:
 - shape_tag: null
   reason_code: null
@@ -123,4 +130,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-10T02:31:08Z'
+last_updated: '2026-08-10T20:59:14Z'
