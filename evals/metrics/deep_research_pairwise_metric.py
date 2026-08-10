@@ -1,12 +1,18 @@
 import concurrent.futures
 import json
 import random
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
+from evals.metrics.judge_stability import (
+    STABILITY_AGGREGATE_KEYS,
+    JudgeStability,
+    aggregate_judge_stability,
+    compute_judge_stability,
+)
 from evals.utils import (
     query_openai_model,
     query_openai_model_structured_outputs,
@@ -95,6 +101,10 @@ class DimensionResult(BaseModel):
     score: float
     preferred: List[str]
     raw_preferences: dict
+    # Judge self-consistency across the repeated trials (Optional so output
+    # serialized before this field existed still re-validates). Populated by
+    # ``DeepResearchPairwiseMetric.score`` from the already-collected trial data.
+    stability: Optional[JudgeStability] = None
 
 
 class DeepResearchScoreResult(BaseModel):
@@ -399,6 +409,10 @@ WEAKNESSES:
                 score=dimension_output_dict["consensus_score"],
                 preferred=dimension_output_dict["all_preferred"],
                 raw_preferences=dimension_output_dict["raw_preferences"],
+                stability=compute_judge_stability(
+                    all_preferred=dimension_output_dict["all_preferred"],
+                    all_scores=dimension_output_dict["all_scores"],
+                ),
             )
 
         # Create and return the full result object
@@ -458,6 +472,17 @@ WEAKNESSES:
                 "net_winrate": net_winrate,
             }
 
+            # Judge self-consistency across the repeated trials (adapted from
+            # arXiv:2608.06202 -- "measure consistency across runs"). Rows
+            # without a stability block (e.g. re-validated from pre-stability
+            # output) are skipped rather than counted as zero signal.
+            dim_stabilities = [
+                r.stability for r in dimension_results if r.stability is not None
+            ]
+            aggregated_metrics[dimension]["stability"] = aggregate_judge_stability(
+                dim_stabilities
+            )
+
         # Create overall average dictionaries
         aggregated_metrics["overall"] = {}
 
@@ -474,6 +499,17 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # Overall judge stability = cross-dimension mean of the per-dimension
+        # stability blocks (adapted from arXiv:2608.06202).
+        aggregated_metrics["overall"]["stability"] = {
+            key: sum(
+                aggregated_metrics[dimension]["stability"][key]
+                for dimension in DIMENSIONS
+            )
+            / len(DIMENSIONS)
+            for key in STABILITY_AGGREGATE_KEYS
+        }
 
         # Collect raw preferences for explanation summary
         raw_preferences = []

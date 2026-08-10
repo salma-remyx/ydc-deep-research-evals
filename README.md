@@ -144,3 +144,16 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Judge Stability (within-prompt judge self-consistency)
+
+Adapted from *What Current AI Benchmarks Leave Unmeasured: Modality, Search, Citations, and Implications (for Safety Evaluations)* (arXiv:2608.06202), which argues that single-run benchmark accuracy obscures behavioral variation and that response consistency across repeated runs should be measured explicitly.
+
+The pairwise metric already runs `num_trials` original + `num_trials` flipped trials per row and collects a per-trial preference and signed gap score per dimension. In addition to the majority-vote grade, each `DimensionResult` now carries a `stability` block surfacing how self-consistent the judge was across those repeated trials:
+
+- `agreement_rate` — share of trials matching the majority preference (`[0.5, 1.0]`; `1.0` = unanimous).
+- `preference_entropy` — normalized Shannon entropy of the per-trial preference split (`[0, 1]`; `0` = unanimous).
+- `score_std` — standard deviation of the per-trial signed gap scores.
+- `is_unanimous` — convenience flag (`agreement_rate == 1.0`).
+
+Aggregated output adds a `stability` sub-block per dimension and under `overall`, including an `inconsistent_rate` — the share of rows where the judge was not unanimous, the closest native analog to the paper's "inconsistent in up to 21% of prompts" statistic.
