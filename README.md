@@ -144,3 +144,29 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Judge Sensitivity Audit
+
+The pairwise metric debiases A/B position ordering, but says nothing about the
+*judge-identity* axis: does swapping in a different judge model change who wins?
+`evals/judge_sensitivity_audit.py` is a standalone CLI that runs that audit over
+several judge runs of the same data. Run the pairwise evaluator once per judge
+(`--model gpt-5.5`, `--model claude-opus-4.8`, ...), then point the audit at the
+resulting JSONL files (same rows, same order):
+
+```bash
+python -m evals.judge_sensitivity_audit \
+  --judge-results results_gpt.jsonl results_claude.jsonl results_gemini.jsonl \
+  --judge-names gpt-5.5 claude-opus-4.8 gemini-3.5-flash \
+  --candidate-provider openai \
+  --output-dir audit/
+```
+
+It reports, per dimension and overall: inter-judge agreement (Fleiss' kappa),
+per-judge candidate-favor rates (leniency), Wilson and bootstrap confidence
+intervals on the win/tie/lose consensus, judge-vs-consensus agreement (Cohen's
+kappa), and a leniency-adjusted same-provider self-preference test (exact
+permutation p-value; supply `--candidate-providers-file`, one provider per row,
+to estimate it over a multi-candidate panel). Capability adapted from
+"Evaluating medical AI under missing information: same-provider judges and human
+raters change apparent safety" (arXiv:2607.18828v1).
