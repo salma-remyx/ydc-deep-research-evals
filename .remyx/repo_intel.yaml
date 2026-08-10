@@ -66,7 +66,12 @@ observed_landing_zones:
       flag is passed; BankabilityMetric is invoked from ev
     branch: capital-markets-llm-reliability-score-cm-lrs-from-plausible-
     timestamp: '2026-07-24T19:09:02Z'
-  last_observed: '2026-07-24T19:09:02Z'
+  - arxiv: 2607.18828v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: evaluating-medical-ai-under-missing-information-same-provide
+    timestamp: '2026-08-10T02:31:08Z'
+  last_observed: '2026-08-10T02:31:08Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -118,4 +123,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-08T16:27:44Z'
+last_updated: '2026-08-10T02:31:08Z'
