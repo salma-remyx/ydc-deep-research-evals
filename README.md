@@ -144,3 +144,26 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Rubric-grounded scoring — adapted from "From Simple QA to Deep Research: A Verifiable Benchmark Constructed through Iterative Task Evolution"
+
+As an alternative to the holistic pairwise metric, pass `--rubric-grounded-scoring` and each question is decomposed into a DAG of atomic research steps, each carrying verifiable, fact-grounded checkpoints. Both reports are then scored pointwise against the same checkpoints, and the per-dimension result is structure-weighted (a step that unlocks more downstream steps counts for more). This sharpens the `comprehensiveness` and `completeness` dimensions with explicit, checkable structure instead of a single holistic preference.
+
+```bash
+python evals/deep_research_pairwise_evals.py \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --rubric-grounded-scoring
+```
+
+The metric is also usable directly:
+
+```python
+from evals.metrics.rubric_grounded_metric import RubricGroundedMetric
+
+metric = RubricGroundedMetric(eval_model="o3-mini-2025-01-31")
+result = metric.score(question=q, baseline_answer=a, candidate_answer=b)
+```
+
+It returns the same `DeepResearchScoreResult` shape as the pairwise metric, plus checkpoint-coverage transparency in each dimension's `raw_preferences` and `avg_*_checkpoint_coverage` / `total_checkpoints` in the aggregate.

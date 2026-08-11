@@ -24,6 +24,7 @@ class DeepResearchEvaluator:
         num_workers: int = 4,
         metric_num_workers: int = 1,
         metric_num_trials: int = 3,
+        use_rubric_grounded_metric: bool = False,
     ):
         """
         Initialize the evaluator.
@@ -34,6 +35,8 @@ class DeepResearchEvaluator:
             num_workers: Number of workers for parallel processing of evaluation tasks
             metric_num_workers: Number of workers for the underlying pairwise metric
             metric_num_trials: Number of trials to run for each evaluation
+            use_rubric_grounded_metric: When True, score with the checkpoint-DAG
+                RubricGroundedMetric instead of the holistic pairwise metric.
         """
         self.model = model
         self.output_path = output_path
@@ -41,11 +44,20 @@ class DeepResearchEvaluator:
         self.metric_num_trials = metric_num_trials
 
         # Initialize the pairwise evaluator
-        self.pairwise_metric = DeepResearchPairwiseMetric(
-            eval_model=model,
-            num_trials=metric_num_trials,
-            num_workers=metric_num_workers,  # Number of workers for the metric
-        )
+        if use_rubric_grounded_metric:
+            # Lazy import so the default path stays unchanged.
+            from evals.metrics.rubric_grounded_metric import RubricGroundedMetric
+
+            self.pairwise_metric = RubricGroundedMetric(
+                eval_model=model,
+                num_workers=metric_num_workers,
+            )
+        else:
+            self.pairwise_metric = DeepResearchPairwiseMetric(
+                eval_model=model,
+                num_trials=metric_num_trials,
+                num_workers=metric_num_workers,  # Number of workers for the metric
+            )
 
     def evaluate_single(
         self,
@@ -225,6 +237,11 @@ def parse_args():
         default=3,
         help="Number of trials per metric computation. Each trial runs the evaluation twice (with original and flipped inputs). Higher values produce more stable metrics but increase computation time.",
     )
+    parser.add_argument(
+        "--rubric-grounded-scoring",
+        action="store_true",
+        help="Score with the checkpoint-DAG RubricGroundedMetric instead of the holistic pairwise metric. Decomposes each question into a DAG of verifiable checkpoints and scores them pointwise with structure weighting.",
+    )
     return parser.parse_args()
 
 
@@ -250,6 +267,7 @@ def main():
         num_workers=args.num_workers,
         metric_num_workers=args.metric_num_workers,
         metric_num_trials=args.metric_num_trials,
+        use_rubric_grounded_metric=args.rubric_grounded_scoring,
     )
 
     # Run evaluation
