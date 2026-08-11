@@ -71,7 +71,14 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: evaluating-medical-ai-under-missing-information-same-provide
     timestamp: '2026-08-10T02:31:08Z'
-  last_observed: '2026-08-10T02:31:08Z'
+  - arxiv: 2608.02163v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: DeepResearchEvaluator.__init__ in evals/deep_research_pairwise_evals.py,
+      instantiated by the pre-existing main() when the new --rubric-grounded-scoring
+      CLI flag is passed; README also documents direct
+    branch: from-simple-qa-to-deep-research-a-verifiable-benchmark-const
+    timestamp: '2026-08-11T15:34:45Z'
+  last_observed: '2026-08-11T15:34:45Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -130,4 +137,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-10T20:59:14Z'
+last_updated: '2026-08-11T15:34:45Z'
