@@ -144,3 +144,23 @@ This project is licensed under the terms included in the LICENSE file.
 - Python 3.10+
 - OpenAI API access
 - Dependencies listed in requirements.txt
+
+## Investment-Logic Process-Trace Scoring (P→E→R→D→O)
+
+In addition to the four output-quality dimensions, the pairwise CLI can score the **investment-logic process trace** behind a report — adapted from *InvestLogicBench* (arXiv:2608.06108). The judge decomposes each report into a **P**rofile → **E**vents → **R**easoning → **D**ecision → **O**utcome trace and compares candidate vs. baseline on three process-focused dimensions:
+
+- **logical_plausibility** — is the investment reasoning internally coherent?
+- **event_grounding** — is the reasoning tethered to specific, observable market evidence (rather than generic assertions)?
+- **process_completeness** — does the report connect concrete evidence to an actionable decision?
+
+The key diagnostic is that *plausibility* and *grounding* can disagree: a report can read as polished yet be weakly grounded — a failure output-only evaluation hides. The aggregate reports a `process_grounding_gap` and a `grounding_warning` flag for this.
+
+```bash
+python evals/deep_research_pairwise_evals.py \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --model o3-mini-2025-01-31 \
+  --investment-logic-scoring
+```
+
+You can also run it directly as a sibling CLI (`python -m evals.investment_logic_evals`) with the same arguments, or use `InvestmentLogicMetric` from `evals.metrics.investment_logic_metric` directly in your code, mirroring the `DeepResearchPairwiseMetric` API.

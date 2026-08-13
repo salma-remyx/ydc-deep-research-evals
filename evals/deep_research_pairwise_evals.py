@@ -225,11 +225,25 @@ def parse_args():
         default=3,
         help="Number of trials per metric computation. Each trial runs the evaluation twice (with original and flipped inputs). Higher values produce more stable metrics but increase computation time.",
     )
+    parser.add_argument(
+        "--investment-logic-scoring",
+        action="store_true",
+        default=False,
+        help="Score the investment-logic process trace (P->E->R->D->O: logical_plausibility, event_grounding, process_completeness) instead of the default output-quality dimensions. Delegates to evals.investment_logic_evals.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+
+    if args.investment_logic_scoring:
+        # Delegate to the investment-logic sibling CLI, which audits the
+        # P->E->R->D->O process trace (reasoning grounding) instead of the
+        # default output-quality dimensions.
+        from evals.investment_logic_evals import main as run_investment_logic_evals
+
+        return run_investment_logic_evals()
 
     # Create output directory if it doesn't exist
     output_dir = Path(args.output_dir)
