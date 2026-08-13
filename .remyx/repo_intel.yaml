@@ -78,7 +78,14 @@ observed_landing_zones:
       CLI flag is passed; README also documents direct
     branch: from-simple-qa-to-deep-research-a-verifiable-benchmark-const
     timestamp: '2026-08-11T15:34:45Z'
-  last_observed: '2026-08-11T15:34:45Z'
+  - arxiv: 2608.06108v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "evals/deep_research_pairwise_evals.py main() \u2014 the\
+      \ existing pairwise CLI entry point \u2014 via the new --investment-logic-scoring\
+      \ flag, which delegates to evals.investment_logic_evals.main() (also runnabl"
+    branch: evaluating-investment-logic-in-large-language-models-a-real-
+    timestamp: '2026-08-13T05:52:48Z'
+  last_observed: '2026-08-13T05:52:48Z'
 - path: evals/metrics/
   shape_tags:
   - unclassified
@@ -137,4 +144,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-11T15:34:45Z'
+last_updated: '2026-08-13T05:52:48Z'
