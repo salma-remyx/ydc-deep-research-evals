@@ -7,6 +7,11 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, computed_field, field_validator
 from retry import retry
 
+from evals.metrics.pivotal_vote_metric import (
+    ballot_margin,
+    is_pivotal_ballot,
+    pivotal_breakdown_across_dimensions,
+)
 from evals.utils import (
     query_openai_model,
     query_openai_model_structured_outputs,
@@ -95,6 +100,20 @@ class DimensionResult(BaseModel):
     score: float
     preferred: List[str]
     raw_preferences: dict
+
+    @computed_field
+    def vote_margin(self) -> int:
+        """Absolute ballot margin |num_b - num_a| for this decision (0 = tie)."""
+        return ballot_margin(self.preferred)
+
+    @computed_field
+    def is_pivotal(self) -> bool:
+        """Whether a single-ballot substitution could change this decision.
+
+        Adapted from the "pivotal vote" affected-set result (arXiv:2608.06940):
+        only decisions at or below a one-vote-equivalent margin can move.
+        """
+        return is_pivotal_ballot(self.preferred)
 
 
 class DeepResearchScoreResult(BaseModel):
@@ -474,6 +493,13 @@ WEAKNESSES:
                 aggregated_metrics[dimension][metric] for dimension in DIMENSIONS
             ) / len(DIMENSIONS)
             aggregated_metrics["overall"][metric] = overall_avg
+
+        # Pivotal-vote breakdown: which (query, dimension) decisions a single
+        # substituted/added ballot could change -- the affected-set / call-
+        # reduction share for a verification signal. See pivotal_vote_metric.
+        aggregated_metrics["pivotal_vote"] = pivotal_breakdown_across_dimensions(
+            scores_list, DIMENSIONS
+        )
 
         # Collect raw preferences for explanation summary
         raw_preferences = []
