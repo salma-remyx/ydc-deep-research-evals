@@ -135,7 +135,14 @@ observed_landing_zones:
       and DeepResearchPairwiseMetric.aggregate() (per-dimension + overall '
     branch: what-current-ai-benchmarks-leave-unmeasured-modality-search-
     timestamp: '2026-08-10T20:59:14Z'
-  last_observed: '2026-08-10T20:59:14Z'
+  - arxiv: 2608.06940v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: DeepResearchPairwiseMetric.aggregate() in evals/metrics/deep_research_pairwise_metric.py,
+      reached via DeepResearchEvaluator.aggregate_results() (evals/deep_research_pairwise_evals.py:188)
+      from the pre
+    branch: blind-to-the-pivotal-vote-aggregate-independence-metrics-mis
+    timestamp: '2026-08-14T03:56:36Z'
+  last_observed: '2026-08-14T03:56:36Z'
 rejected_shapes:
 - shape_tag: null
   reason_code: null
@@ -144,4 +151,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-13T05:52:48Z'
+last_updated: '2026-08-14T03:56:36Z'
