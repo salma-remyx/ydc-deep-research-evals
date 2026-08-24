@@ -142,7 +142,14 @@ observed_landing_zones:
       from the pre
     branch: blind-to-the-pivotal-vote-aggregate-independence-metrics-mis
     timestamp: '2026-08-14T03:56:36Z'
-  last_observed: '2026-08-14T03:56:36Z'
+  - arxiv: 2608.17938v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "(none) \u2014 new sibling CLI entry point python -m evals.rubric_anchored_evals;\
+      \ the pre-existing entry point evals.deep_research_pairwise_evals instantiates\
+      \ DeepResearchEvaluator directly and does not rou"
+    branch: grading-needs-a-rubric-not-intelligence
+    timestamp: '2026-08-24T22:58:55Z'
+  last_observed: '2026-08-24T22:58:55Z'
 rejected_shapes:
 - shape_tag: null
   reason_code: null
@@ -151,4 +158,4 @@ rejected_shapes:
   - arxiv: 2607.28094v1
     timestamp: '2026-08-08T16:27:44Z'
 coordination_signals: []
-last_updated: '2026-08-14T03:56:36Z'
+last_updated: '2026-08-24T22:58:55Z'
