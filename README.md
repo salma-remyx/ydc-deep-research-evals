@@ -135,6 +135,29 @@ The evaluator supports several configuration options:
 - `metric-num-trials`: Number of trials per evaluation for more stable results (default: 3)
   - For each trial, the evaluation runs twice - once with the original order and once with the baseline and candidate answers flipped. This helps mitigate potential position bias in the evaluation.
 
+## Rubric-Anchored Evaluation
+
+Adapted from [Grading Needs a Rubric, Not Intelligence](https://arxiv.org/abs/2608.17938), which finds that grading reliability is decoupled from judge intelligence once the judge is anchored in an explicit rubric — and that within the rubric, the official answer does nearly all the work.
+
+The default pairwise prompt grades against four flat dimension descriptions with no reference standard. `evals/rubric_anchored_evals.py` runs the same pipeline with the judge additionally anchored to a rubric built from the baseline report: explicit criteria extracted from the question and the reference, plus the reference itself as the official answer.
+
+```bash
+python -m evals.rubric_anchored_evals \
+  --input-data datasets/DeepConsult/responses_OpenAI-DeepResearch_vs_ARI_2025-05-15.csv \
+  --output-dir path/to/output/directory \
+  --anchor full
+```
+
+`--anchor` selects the anchoring arm:
+
+| Mode | Criteria | Official answer | Paper's arm |
+| --- | --- | --- | --- |
+| `full` | yes | yes | main |
+| `answer_only` | no | yes | ablation 1 |
+| `none` | no | no | ablation 2 (stock prompt) |
+
+Pass `--compare-default` to run all three arms in one invocation. Alongside the standard aggregates, each run reports the judge-reliability analysis the paper is about — per-dimension and overall `icc`, `preference_agreement`, and `mean_trial_score_spread`, computed from the trials each row already runs. The gap between `answer_only` and `none` is how much agreement the official answer carries; per the paper, this is where reliability collapses when the reference is removed.
+
 ## License
 
 This project is licensed under the terms included in the LICENSE file.
